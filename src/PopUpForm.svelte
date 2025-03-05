@@ -11,12 +11,17 @@
     email: "",
     cityStateZip: "",
     lookingFor: "",
-    moveInTime: "",
-    moveInComments: "",
+    travelTime: "", // Changed from moveInTime for "travel"
+    travelComments: "", // Changed from moveInComments for "travel"
+    moveInTime: "", // Retained for "live"
+    moveInComments: "", // Retained for "live"
+    rvUse: "", // New field for "travel"
     budget: "",
     purchaseMethod: "",
     comments: "",
   };
+
+  let dialogElement;
 
   // Load saved data when the popup mounts
   onMount(() => {
@@ -24,6 +29,7 @@
     if (savedData) {
       formData = JSON.parse(savedData);
     }
+    dialogElement.showModal();
   });
 
   // Save formData to localStorage whenever it changes
@@ -33,7 +39,6 @@
 
   function handleSubmit() {
     console.log("Form submitted:", formData);
-    // Clear form and localStorage only on submission
     formData = {
       firstName: "",
       lastName: "",
@@ -41,42 +46,53 @@
       email: "",
       cityStateZip: "",
       lookingFor: "",
+      travelTime: "",
+      travelComments: "",
       moveInTime: "",
       moveInComments: "",
+      rvUse: "",
       budget: "",
       purchaseMethod: "",
       comments: "",
     };
     localStorage.removeItem(`formData_${type}`);
+    dialogElement.close();
     onClose();
   }
 
-  // Keyboard handler for closing the overlay (e.g., Enter or Space)
-  function handleOverlayKeydown(event) {
-    if (event.key === "Enter" || event.key === " ") {
+  // Handle closing via overlay click (backdrop)
+  function handleOverlayClick(event) {
+    if (event.target === dialogElement) {
+      dialogElement.close();
       onClose();
     }
   }
 
-  // Optional: Clear localStorage on page exit (unload)
+  // Optional: Clear localStorage on page exit (uncomment if desired)
   onDestroy(() => {
-    // Uncomment the line below if you want data cleared on page exit
     // localStorage.removeItem(`formData_${type}`);
   });
 </script>
 
-<!-- Overlay as a div with ARIA role and keyboard support -->
-<div
+<!-- Dialog element for the popup -->
+<dialog
   class="popup-overlay"
-  role="dialog"
-  aria-label="Lead form popup for {type}"
-  on:click={onClose}
-  on:keydown={handleOverlayKeydown}
-  tabindex="0"
+  bind:this={dialogElement}
+  on:click={handleOverlayClick}
+  on:cancel={() => {
+    dialogElement.close();
+    onClose();
+  }}
 >
-  <!-- Content with click propagation stopped -->
-  <div class="popup-content" on:click|stopPropagation>
-    <button class="close-btn" on:click={onClose}>×</button>
+  <!-- Content container (non-interactive) -->
+  <div class="popup-content">
+    <button
+      class="close-btn"
+      on:click={() => {
+        dialogElement.close();
+        onClose();
+      }}>×</button
+    >
 
     {#if type === "live"}
       <p>
@@ -88,16 +104,16 @@
     {:else if type === "travel"}
       <p>
         Looking for a way to travel in style and always feel at home? Our Tiny
-        Homes on Wheels offer luxury and comfort, whether you’re parked in
-        bustling Manhattan or high up in the Rocky Mountains, you'll never have
-        to sacrifice luxury for affordability again. . .
+        Home RVs offer luxury and comfort, whether you’re parked in bustling
+        Manhattan or high up in the Rocky Mountains, you'll never have to
+        sacrifice luxury for affordability again. . .
       </p>
       <h3>I want to travel in a tiny home</h3>
     {:else if type === "invest"}
       <p>
         Whether you have several acres, or just a spare driveway, investing in
-        Tiny Home properties can accomodate any investor appetite or budget.
-        Start with a single unit or create an entire Tiny village to generating
+        Tiny Home properties can accommodate any investor appetite or budget.
+        Start with a single unit or create an entire Tiny village to generate
         steady, passive income while delivering affordable housing to
         communities in need.
       </p>
@@ -133,42 +149,74 @@
           <option value="someoneElse">For someone else</option>
         </select>
       </label>
-      <label>
-        When are you looking to move into your Tiny Home?
-        <select bind:value={formData.moveInTime} required>
-          <option value="">Select an option</option>
-          <option value="yesterday">Yesterday</option>
-          <option value="1-6months">1-6 Months</option>
-          <option value="withinYear">Within a year</option>
-          <option value="sometime">Other (Please specify...)</option>
-        </select>
-      </label>
-      {#if formData.moveInTime === "sometime"}
+
+      {#if type === "live"}
         <label>
-          Comments on move-in time:
-          <textarea bind:value={formData.moveInComments}></textarea>
+          When are you looking to move into your Tiny Home?
+          <select bind:value={formData.moveInTime} required>
+            <option value="">Select an option</option>
+            <option value="yesterday">Yesterday</option>
+            <option value="1-6months">1-6 Months</option>
+            <option value="withinYear">Within a year</option>
+            <option value="sometime">Other (Please specify...)</option>
+          </select>
+        </label>
+        {#if formData.moveInTime === "sometime"}
+          <label>
+            Comments on move-in time:
+            <textarea bind:value={formData.moveInComments}></textarea>
+          </label>
+        {/if}
+      {:else if type === "travel"}
+        <label>
+          When are you looking to travel in your Tiny Home RV?
+          <select bind:value={formData.travelTime} required>
+            <option value="">Select an option</option>
+            <option value="yesterday">Yesterday</option>
+            <option value="1-6months">1-6 Months</option>
+            <option value="withinYear">Within a year</option>
+            <option value="sometime">Other (Please specify...)</option>
+          </select>
+        </label>
+        {#if formData.travelTime === "sometime"}
+          <label>
+            Comments on travel time:
+            <textarea bind:value={formData.travelComments}></textarea>
+          </label>
+        {/if}
+        <label>
+          How do you intend to use your Tiny Home RV?
+          <select bind:value={formData.rvUse} required>
+            <option value="">Select an option</option>
+            <option value="dryCamping">Dry Camping/Boondocking</option>
+            <option value="hookups">With Hookups (RV Park/Campgrounds)</option>
+          </select>
         </label>
       {/if}
-      <label>
-        What is your budget?
-        <select bind:value={formData.budget} required>
-          <option value="">Select an option</option>
-          <option value="under70k">{@html "<$70,000 (bare bones)"}</option>
-          <option value="70k-100k">$70,000-$100,000 (eco-luxury)</option>
-          <option value="over100k"
-            >$100,000+ (all the bells and whistles)</option
-          >
-        </select>
-      </label>
-      <label>
-        How are you planning to purchase your Tiny Home?
-        <select bind:value={formData.purchaseMethod} required>
-          <option value="">Select an option</option>
-          <option value="cash">Cash/Check</option>
-          <option value="ownFinancing">I have my own financing</option>
-          <option value="needFinancing">I need financing</option>
-        </select>
-      </label>
+
+      {#if type === "live" || type === "travel"}
+        <label>
+          What is your budget?
+          <select bind:value={formData.budget} required>
+            <option value="">Select an option</option>
+            <option value="under70k">{@html "<$70,000 (bare bones)"}</option>
+            <option value="70k-100k">$70,000-$100,000 (eco-luxury)</option>
+            <option value="over100k"
+              >$100,000+ (all the bells and whistles)</option
+            >
+          </select>
+        </label>
+        <label>
+          How are you planning to purchase your Tiny Home?
+          <select bind:value={formData.purchaseMethod} required>
+            <option value="">Select an option</option>
+            <option value="cash">Cash/Check</option>
+            <option value="ownFinancing">I have my own financing</option>
+            <option value="needFinancing">I need financing</option>
+          </select>
+        </label>
+      {/if}
+
       <label>
         Comments:
         <textarea bind:value={formData.comments}></textarea>
@@ -176,7 +224,7 @@
       <button type="submit">Submit</button>
     </form>
   </div>
-</div>
+</dialog>
 
 <style>
   .popup-overlay {
@@ -190,6 +238,9 @@
     justify-content: center;
     align-items: center;
     z-index: 1001;
+    border: none;
+    padding: 0;
+    margin: 0;
   }
 
   .popup-content {

@@ -14,7 +14,17 @@
     isMenuOpen = !isMenuOpen;
   }
 
-  const carouselImages = [
+  // Function to shuffle an array (Fisher-Yates/Knuth shuffle)
+  function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]]; // Swap elements
+    }
+    return array;
+  }
+
+  // Initialize and shuffle carousel images on page load
+  const carouselImages = shuffleArray([
     "/assets/images/carousel/project1.jpg",
     "/assets/images/carousel/project2.jpg",
     "/assets/images/carousel/project3.jpg",
@@ -24,7 +34,7 @@
     "/assets/images/carousel/project7.jpg",
     "/assets/images/carousel/project8.jpg",
     "/assets/images/carousel/project9.jpg",
-  ];
+  ]);
 
   // Function to toggle carousel pop-up and set the current slide index
   function toggleCarouselPopUp(index = 0) {
@@ -35,12 +45,15 @@
   }
 
   // Privacy Policy text from attachment 7 (adjusted company name to "llams, LLC" based on context)
+  // Added line breaks and new paragraphs after "third parties.", "browser settings.", and "for their policies."
   const privacyPolicyText = `
     llams, LLC, a local Idaho Limited Liability Company, owns this website and all associated data. We collect personal information that you voluntarily provide, such as your name and email address, to respond to your inquiries, provide our services, and enhance our website. Rest assured, we will never sell, rent, or share your information with any third parties.
 
     We implement reasonable measures to safeguard your data, though we cannot guarantee absolute security. You have the right to access, correct, or delete your personal information by contacting us at contact@llamstiny.com. Additionally, our site may use cookies to improve your browsing experience; you can manage your cookie preferences through your browser settings.
 
-    Please note that our website is not intended for children under the age of 13, and we do not knowingly collect information from them. Links to third-party websites are provided for your convenience, but they have their own privacy policies, and we are not responsible for their practices. We may update this Privacy Policy periodically; your continued use of the site constitutes acceptance of any changes. This policy is governed by the laws of the State of Idaho. For any questions or concerns, please contact us at contact@llamstiny.com.
+    Please note that our website is not intended for children under the age of 13, and we do not knowingly collect information from them. Links to third-party websites are provided for your convenience, but they have their own privacy policies, and we are not responsible for their practices.
+
+    We may update this Privacy Policy periodically; your continued use of the site constitutes acceptance of any changes. This policy is governed by the laws of the State of Idaho. For any questions or concerns, please contact us at contact@llamstiny.com.
   `;
 </script>
 
@@ -67,22 +80,25 @@
           pagination: true,
           arrows: true,
           type: "loop",
-          perPage: 3,
+          perPage: 3, // Show 3 slides on desktop, 1 on mobile
           focus: "center",
           width: "100%",
+          height: "400px", // Fixed height for desktop carousel container
           gap: "10px",
-          padding: { left: "10%", right: "10%" },
-          cover: false,
+          padding: { left: "10%", right: "10%" }, // Maintain spacing on desktop
+          cover: true, // Ensures images cover the container, maintaining aspect ratio
           breakpoints: {
             768: {
-              perPage: 1,
+              perPage: 1, // Single slide on tablets and below
               gap: "0px",
               padding: 0,
+              height: "auto", // Adjust height dynamically on mobile
             },
             480: {
               perPage: 1,
               gap: "0px",
               padding: 0,
+              height: "auto", // Adjust height dynamically on mobile
             },
           },
         }}
@@ -127,6 +143,22 @@
           <span>invest</span>
         </button>
       </div>
+    </div>
+  </section>
+
+  <!-- About Us Section -->
+  <section class="about-us-section">
+    <div class="about-us-container">
+      <h2>About Us</h2>
+      <p>
+        We are experts in construction, carpentry and general contracting, with
+        over thirty years of experience. Our specialty lies in residential
+        contracting, premium custom cabinetry, and interior design. Throughout
+        the last three decades, we have handled over $30M in projects, ranging
+        from new builds to home remodels and additions. Whether working with
+        residential clients or real estate investors, we are committed to
+        bringing your vision to life.
+      </p>
     </div>
   </section>
 
@@ -271,7 +303,7 @@
     align-items: center;
     min-height: 100vh;
     padding-top: 60px;
-    padding-bottom: 20px; /* Space for fixed footer */
+    padding-bottom: 40px; /* Increased to account for fixed footer and About Us section */
     background-color: #f1f1ef;
   }
 
@@ -287,7 +319,7 @@
     max-width: 1200px;
     margin: 0 auto;
     overflow: hidden;
-    max-height: 400px;
+    height: 400px; /* Fixed height for desktop */
     display: flex;
     justify-content: center;
     align-items: center;
@@ -315,22 +347,24 @@
     justify-content: center;
     align-items: center;
     overflow: hidden;
-    transform: scale(0.7); /* Smaller size for side slides */
-    transition: transform 0s; /* Instant transform change for entering center */
+    transform: scale(0.7); /* Smaller size for inactive slides on desktop */
+    transition:
+      transform 0.3s ease,
+      opacity 0s; /* Smooth scaling for inactive slides */
     cursor: pointer; /* Indicate clickable */
   }
 
   /* Active slide content (center only) */
   :global(.splide__slide.is-active .slide-content) {
-    transform: scale(1); /* Larger size for featured slide */
-    transition: transform 0s; /* Instant transform change for entering center */
+    transform: scale(1); /* Full size for featured slide */
+    transition: transform 0.3s ease; /* Smooth scaling for active slide */
   }
 
   /* Image styling */
   .carousel-image {
     width: 100%;
     height: 100%;
-    object-fit: contain; /* Ensures images fit containers without distortion */
+    object-fit: cover; /* Ensures images cover the container, maintaining aspect ratio */
   }
 
   /* Splide Arrows (matching design) */
@@ -490,6 +524,44 @@
     text-align: center;
   }
 
+  /* About Us Section */
+  .about-us-section {
+    width: 100%;
+    padding: 20px 0;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f1f1ef; /* Matches main background */
+  }
+
+  .about-us-container {
+    background-color: #d8d6d2; /* Matches other panels */
+    border-radius: 10px;
+    padding: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    text-align: left;
+    max-width: 1200px;
+    width: 60%;
+    margin-bottom: 2rem;
+  }
+
+  .about-us-container h2 {
+    font-family: "Josefin Sans", sans-serif;
+    font-size: 1.5rem;
+    font-weight: 200;
+    color: #707070;
+    margin-bottom: 1rem;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+  }
+
+  .about-us-container p {
+    font-family: "Josefin Sans", sans-serif;
+    font-size: 0.75rem;
+    color: #979797;
+    line-height: 1.25;
+  }
+
   /* Footer and Privacy Policy Drawer */
   footer {
     height: 20px;
@@ -542,18 +614,19 @@
     font-size: 0.5em; /* Default size for readability */
     color: #5f5f5f;
     text-align: center;
+    white-space: pre-wrap; /* Preserves line breaks and new paragraphs from the text */
   }
 
   /* Responsive font sizes for drawer text */
   @media (max-width: 600px) {
     .drawer-text {
-      font-size: 0.5em; /* Larger on small screens (e.g., mobile phones) */
+      font-size: 0.75em; /* Larger on small screens (e.g., mobile phones) */
     }
   }
 
   @media (min-width: 601px) and (max-width: 1024px) {
     .drawer-text {
-      font-size: 0.5em; /* Slightly larger on medium screens (e.g., tablets) */
+      font-size: 0.65em; /* Slightly larger on medium screens (e.g., tablets) */
     }
   }
 
@@ -597,6 +670,12 @@
       height: 30px;
       font-size: 1.2rem;
     }
+    .about-us-container h2 {
+      font-size: 1.5rem; /* Slightly smaller on tablets */
+    }
+    .about-us-container p {
+      font-size: 0.75rem; /* Adjust font size for tablets */
+    }
   }
 
   @media (max-width: 480px) {
@@ -632,6 +711,12 @@
       width: 25px;
       height: 25px;
       font-size: 1rem;
+    }
+    .about-us-container h2 {
+      font-size: 1.5rem; /* Smaller on mobile */
+    }
+    .about-us-container p {
+      font-size: 0.75rem; /* Adjust font size for mobile */
     }
   }
 </style>
