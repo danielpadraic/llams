@@ -1,0 +1,26 @@
+/* Import Yellowtail and Josefin Sans fonts from Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Yellowtail&family=Josefin+Sans:ital,wght@0,100;0,200;0,300;0,400;0,700&family=League+Script&display=swap');
+
+/* Reset default styles for all elements */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Base styles for the body */
+body {
+  color: #333;
+  background-color: #fff;
+  font-family: 'Josefin Sans', sans-serif; /* Default font for all text */
+}
+
+/* Link styles */
+a {
+  color: #333;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
