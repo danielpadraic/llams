@@ -68,10 +68,25 @@
   <div class="logo">llams</div>
   <button class="hamburger" on:click={toggleMenu}>≡</button>
   <nav class:is-open={isMenuOpen}>
-    <a href="/tiny-homes" on:click={() => toggleMenu()}>Tiny Homes</a>
-    <a href="/projects" on:click={() => toggleMenu()}>Projects</a>
-    <a href="/about" on:click={() => toggleMenu()}>About</a>
-    <a href="/contact" on:click={() => toggleMenu()}>Contact Us</a>
+    <a
+      href="https://www.llamstiny.com/tiny-homes"
+      target="_blank"
+      rel="noopener noreferrer"
+      on:click={() => toggleMenu()}>Tiny Homes</a
+    >
+    <a
+      href="https://www.llamstiny.com/projects"
+      target="_blank"
+      rel="noopener noreferrer"
+      on:click={() => toggleMenu()}>Projects</a
+    >
+    <a
+      href="https://www.llamstiny.com/about"
+      target="_blank"
+      rel="noopener noreferrer"
+      on:click={() => toggleMenu()}>About</a
+    >
+    <a href="tel:(208)871-6270" on:click={() => toggleMenu()}>Contact Us</a>
   </nav>
 </header>
 
