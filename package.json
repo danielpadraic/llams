@@ -15,7 +15,8 @@
     "vite": "^6.0.0"
   },
   "dependencies": {
+    "@splidejs/svelte-splide": "^0.2.9",
     "@supabase/supabase-js": "^2.49.1",
-    "@splidejs/svelte-splide": "^0.2.9"
+    "googleapis": "^146.0.0"
   }
 }

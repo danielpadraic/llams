@@ -1,8 +1,15 @@
 <script>
   import { onMount, onDestroy } from "svelte";
+  import { createClient } from "@supabase/supabase-js";
 
   export let type;
   export let onClose;
+
+  // Initialize Supabase client
+  const supabase = createClient(
+    import.meta.env.SUPABASE_URL,
+    import.meta.env.SUPABASE_ANON_KEY
+  );
 
   let formData = {
     firstName: "",
@@ -11,19 +18,23 @@
     email: "",
     cityStateZip: "",
     lookingFor: "",
-    travelTime: "", // Changed from moveInTime for "travel"
-    travelComments: "", // Changed from moveInComments for "travel"
-    moveInTime: "", // Retained for "live"
-    moveInComments: "", // Retained for "live"
-    rvUse: "", // New field for "travel"
+    travelTime: "",
+    travelComments: "",
+    moveInTime: "",
+    moveInComments: "",
+    unitCount: "",
+    rentalStartTime: "",
+    rentalStartComments: "",
+    hasLand: "",
+    needsLandHelp: "",
     budget: "",
     purchaseMethod: "",
     comments: "",
+    preferredContact: "",
   };
 
   let dialogElement;
 
-  // Load saved data when the popup mounts
   onMount(() => {
     const savedData = localStorage.getItem(`formData_${type}`);
     if (savedData) {
@@ -32,13 +43,49 @@
     dialogElement.showModal();
   });
 
-  // Save formData to localStorage whenever it changes
   $: {
     localStorage.setItem(`formData_${type}`, JSON.stringify(formData));
   }
 
-  function handleSubmit() {
-    console.log("Form submitted:", formData);
+  async function handleSubmit() {
+    // Prepare the data to send to Supabase
+    const leadData = {
+      type: type,
+      first_name: formData.firstName,
+      last_name: formData.lastName,
+      phone: formData.phone,
+      email: formData.email,
+      city_state_zip: formData.cityStateZip,
+      looking_for: formData.lookingFor,
+      budget: formData.budget,
+      comments: formData.comments,
+      preferred_contact: formData.preferredContact,
+      move_in_time: type === "live" ? formData.moveInTime : null,
+      move_in_comments: type === "live" ? formData.moveInComments : null,
+      travel_time: type === "travel" ? formData.travelTime : null,
+      travel_comments: type === "travel" ? formData.travelComments : null,
+      rv_use: type === "travel" ? formData.rvUse : null,
+      unit_count: type === "invest" ? formData.unitCount : null,
+      rental_start_time: type === "invest" ? formData.rentalStartTime : null,
+      rental_start_comments:
+        type === "invest" ? formData.rentalStartComments : null,
+      has_land: type === "invest" ? formData.hasLand : null,
+      needs_land_help: type === "invest" ? formData.needsLandHelp : null,
+      purchase_method:
+        type === "live" || type === "travel" ? formData.purchaseMethod : null,
+    };
+
+    // Insert the lead into Supabase
+    const { error } = await supabase.from("leads").insert([leadData]);
+
+    if (error) {
+      console.error("Error submitting lead:", error);
+      return;
+    }
+
+    console.log("Lead submitted successfully:", leadData);
+
+    // Reset form and close
     formData = {
       firstName: "",
       lastName: "",
@@ -50,17 +97,21 @@
       travelComments: "",
       moveInTime: "",
       moveInComments: "",
-      rvUse: "",
+      unitCount: "",
+      rentalStartTime: "",
+      rentalStartComments: "",
+      hasLand: "",
+      needsLandHelp: "",
       budget: "",
       purchaseMethod: "",
       comments: "",
+      preferredContact: "",
     };
     localStorage.removeItem(`formData_${type}`);
     dialogElement.close();
     onClose();
   }
 
-  // Handle closing via overlay click (backdrop)
   function handleOverlayClick(event) {
     if (event.target === dialogElement) {
       dialogElement.close();
@@ -68,13 +119,12 @@
     }
   }
 
-  // Optional: Clear localStorage on page exit (uncomment if desired)
   onDestroy(() => {
+    // Optional: Uncomment to clear localStorage on destroy
     // localStorage.removeItem(`formData_${type}`);
   });
 </script>
 
-<!-- Dialog element for the popup -->
 <dialog
   class="popup-overlay"
   bind:this={dialogElement}
@@ -84,7 +134,6 @@
     onClose();
   }}
 >
-  <!-- Content container (non-interactive) -->
   <div class="popup-content">
     <button
       class="close-btn"
@@ -104,11 +153,11 @@
     {:else if type === "travel"}
       <p>
         Looking for a way to travel in style and always feel at home? Our Tiny
-        Home RVs offer luxury and comfort, whether you’re parked in bustling
+        Homes RVs offer luxury and comfort, whether you’re parked in bustling
         Manhattan or high up in the Rocky Mountains, you'll never have to
         sacrifice luxury for affordability again. . .
       </p>
-      <h3>I want to travel in a tiny home</h3>
+      <h3>I want to travel in a tiny home:</h3>
     {:else if type === "invest"}
       <p>
         Whether you have several acres, or just a spare driveway, investing in
@@ -117,7 +166,7 @@
         steady, passive income while delivering affordable housing to
         communities in need.
       </p>
-      <h3>I want to invest in tiny homes</h3>
+      <h3>I want to invest in tiny homes:</h3>
     {/if}
 
     <form on:submit|preventDefault={handleSubmit}>
@@ -192,11 +241,62 @@
             <option value="hookups">With Hookups (RV Park/Campgrounds)</option>
           </select>
         </label>
+      {:else if type === "invest"}
+        <label>
+          How many units are you looking to build?
+          <select bind:value={formData.unitCount} required>
+            <option value="">Select an option</option>
+            <option value="1">1</option>
+            <option value="2-5">2-5</option>
+            <option value="6-10">6-10</option>
+            <option value="11-50">11-50</option>
+            <option value="51+">51+</option>
+          </select>
+        </label>
+        <label>
+          When are you looking to begin leasing/selling your Tiny Home(s)?
+          <select bind:value={formData.rentalStartTime} required>
+            <option value="">Select an option</option>
+            <option value="yesterday">Yesterday</option>
+            <option value="1-6months">1-6 Months</option>
+            <option value="withinYear">Within a year</option>
+            <option value="sometime">Other (Please specify...)</option>
+          </select>
+        </label>
+        {#if formData.rentalStartTime === "sometime"}
+          <label>
+            Comments on rental start time:
+            <textarea bind:value={formData.rentalStartComments}></textarea>
+          </label>
+        {/if}
+        <label>
+          Do you already have land?
+          <select bind:value={formData.hasLand} required>
+            <option value="">Select an option</option>
+            <option value="yes">Yes</option>
+            <option value="no">No</option>
+          </select>
+        </label>
+        {#if formData.hasLand === "no"}
+          <label>
+            Would you like help finding land for an investment property or Tiny
+            Home Village?
+            <select bind:value={formData.needsLandHelp} required>
+              <option value="">Select an option</option>
+              <option value="yes">Yes</option>
+              <option value="no">No</option>
+            </select>
+          </label>
+        {/if}
       {/if}
 
-      {#if type === "live" || type === "travel"}
+      {#if type === "live" || type === "travel" || type === "invest"}
         <label>
-          What is your budget?
+          {#if type === "invest"}
+            What is your budget (per unit)?
+          {:else}
+            What is your budget?
+          {/if}
           <select bind:value={formData.budget} required>
             <option value="">Select an option</option>
             <option value="under70k">{@html "<$70,000 (bare bones)"}</option>
@@ -206,6 +306,9 @@
             >
           </select>
         </label>
+      {/if}
+
+      {#if type === "live" || type === "travel"}
         <label>
           How are you planning to purchase your Tiny Home?
           <select bind:value={formData.purchaseMethod} required>
@@ -221,6 +324,36 @@
         Comments:
         <textarea bind:value={formData.comments}></textarea>
       </label>
+
+      <fieldset class="contact-method">
+        <legend>Preferred Contact Method:</legend>
+        <label class="radio-label">
+          <input
+            type="radio"
+            bind:group={formData.preferredContact}
+            value="call"
+            required
+          />
+          Call
+        </label>
+        <label class="radio-label">
+          <input
+            type="radio"
+            bind:group={formData.preferredContact}
+            value="text"
+          />
+          Text
+        </label>
+        <label class="radio-label">
+          <input
+            type="radio"
+            bind:group={formData.preferredContact}
+            value="email"
+          />
+          Email
+        </label>
+      </fieldset>
+
       <button type="submit">Submit</button>
     </form>
   </div>
@@ -301,5 +434,21 @@
     border: none;
     border-radius: 5px;
     cursor: pointer;
+  }
+
+  .contact-method {
+    margin-bottom: 1rem;
+  }
+
+  .radio-label {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5rem;
+  }
+
+  .radio-label input[type="radio"] {
+    width: auto;
+    margin-right: 0.5rem;
+    margin-bottom: 0;
   }
 </style>

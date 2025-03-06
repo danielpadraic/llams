@@ -34,6 +34,13 @@
     "/assets/images/carousel/project7.jpg",
     "/assets/images/carousel/project8.jpg",
     "/assets/images/carousel/project9.jpg",
+    "/assets/images/carousel/project10.jpg",
+    "/assets/images/carousel/project12.jpg",
+    "/assets/images/carousel/project13.jpg",
+    "/assets/images/carousel/project14.jpg",
+    "/assets/images/carousel/project15.jpg",
+    "/assets/images/carousel/project16.jpg",
+    "/assets/images/carousel/project17.jpg",
   ]);
 
   // Function to toggle carousel pop-up and set the current slide index
