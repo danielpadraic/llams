@@ -1,15 +1,9 @@
 <script>
   import { onMount, onDestroy } from "svelte";
-  import { createClient } from "@supabase/supabase-js";
+  import { supabase } from "./supabase"; // Import the shared client
 
   export let type;
   export let onClose;
-
-  // Initialize Supabase client
-  const supabase = createClient(
-    import.meta.env.SUPABASE_URL,
-    import.meta.env.SUPABASE_ANON_KEY
-  );
 
   let formData = {
     firstName: "",
@@ -48,7 +42,7 @@
   }
 
   async function handleSubmit() {
-    // Prepare the data to send to Supabase
+    // Prepare the data to send to the Edge Function
     const leadData = {
       type: type,
       first_name: formData.firstName,
@@ -75,41 +69,60 @@
         type === "live" || type === "travel" ? formData.purchaseMethod : null,
     };
 
-    // Insert the lead into Supabase
-    const { error } = await supabase.from("leads").insert([leadData]);
+    // Call the submit-lead Edge Function
+    try {
+      const response = await fetch(
+        "https://pxxccofroamhafrxigox.supabase.co/functions/v1/submit-lead",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${import.meta.env.SUPABASE_ANON_KEY}`, // Add the anon key
+          },
+          body: JSON.stringify(leadData),
+        }
+      );
 
-    if (error) {
+      const result = await response.json();
+
+      if (!response.ok || result.error) {
+        console.error(
+          "Error submitting lead:",
+          result.error || response.statusText
+        );
+        return;
+      }
+
+      console.log("Lead submitted successfully:", leadData);
+
+      // Reset form and close
+      formData = {
+        firstName: "",
+        lastName: "",
+        phone: "",
+        email: "",
+        cityStateZip: "",
+        lookingFor: "",
+        travelTime: "",
+        travelComments: "",
+        moveInTime: "",
+        moveInComments: "",
+        unitCount: "",
+        rentalStartTime: "",
+        rentalStartComments: "",
+        hasLand: "",
+        needsLandHelp: "",
+        budget: "",
+        purchaseMethod: "",
+        comments: "",
+        preferredContact: "",
+      };
+      localStorage.removeItem(`formData_${type}`);
+      dialogElement.close();
+      onClose();
+    } catch (error) {
       console.error("Error submitting lead:", error);
-      return;
     }
-
-    console.log("Lead submitted successfully:", leadData);
-
-    // Reset form and close
-    formData = {
-      firstName: "",
-      lastName: "",
-      phone: "",
-      email: "",
-      cityStateZip: "",
-      lookingFor: "",
-      travelTime: "",
-      travelComments: "",
-      moveInTime: "",
-      moveInComments: "",
-      unitCount: "",
-      rentalStartTime: "",
-      rentalStartComments: "",
-      hasLand: "",
-      needsLandHelp: "",
-      budget: "",
-      purchaseMethod: "",
-      comments: "",
-      preferredContact: "",
-    };
-    localStorage.removeItem(`formData_${type}`);
-    dialogElement.close();
-    onClose();
   }
 
   function handleOverlayClick(event) {
