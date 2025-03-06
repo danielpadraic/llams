@@ -24,11 +24,11 @@ serve(async (req) => {
     // Initialize Supabase client with the service key
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL"),
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") // Updated to use SUPABASE_SERVICE_ROLE_KEY
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")
     );
 
     // Insert the lead into the leads table
-    const { error } = await supabase.from("leads").insert([leadData]);
+    const { data, error } = await supabase.from("leads").insert([leadData]).select().single();
 
     if (error) {
       return new Response(JSON.stringify({ error: error.message }), {
@@ -38,6 +38,25 @@ serve(async (req) => {
           ...corsHeaders,
         },
       });
+    }
+
+    // Call the google-sheets Edge Function
+    const googleSheetsResponse = await fetch(
+      "https://pxxccofroamhafrxigox.supabase.co/functions/v1/google-sheets",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${Deno.env.get("SUPABASE_ANON_KEY")}`,
+        },
+        body: JSON.stringify({ record: data }),
+      }
+    );
+
+    if (!googleSheetsResponse.ok) {
+      const googleSheetsError = await googleSheetsResponse.json();
+      console.error("Error calling google-sheets:", googleSheetsError);
+      // Optionally, you can return an error response here
     }
 
     return new Response(JSON.stringify({ success: true }), {

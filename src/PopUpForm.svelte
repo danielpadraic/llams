@@ -5,26 +5,27 @@
   export let type;
   export let onClose;
 
+  // Initialize formData with default valid values where possible to prevent empty strings
   let formData = {
     firstName: "",
     lastName: "",
     phone: "",
     email: "",
     cityStateZip: "",
-    lookingFor: "",
-    travelTime: "",
+    lookingFor: "myself", // Default to a valid value
+    travelTime: "yesterday", // Default to a valid value
     travelComments: "",
-    moveInTime: "",
+    moveInTime: "yesterday", // Default to a valid value
     moveInComments: "",
-    unitCount: "",
-    rentalStartTime: "",
+    unitCount: "1", // Default to a valid value
+    rentalStartTime: "yesterday", // Default to a valid value
     rentalStartComments: "",
-    hasLand: "",
-    needsLandHelp: "",
-    budget: "",
-    purchaseMethod: "",
+    hasLand: "yes", // Default to a valid value
+    needsLandHelp: "yes", // Default to a valid value
+    budget: "under70k", // Default to a valid value
+    purchaseMethod: "cash", // Default to a valid value
     comments: "",
-    preferredContact: "",
+    preferredContact: "call", // Default to a valid value
   };
 
   let dialogElement;
@@ -50,23 +51,32 @@
       phone: formData.phone,
       email: formData.email,
       city_state_zip: formData.cityStateZip,
-      looking_for: formData.lookingFor,
-      budget: formData.budget,
-      comments: formData.comments,
-      preferred_contact: formData.preferredContact,
-      move_in_time: type === "live" ? formData.moveInTime : null,
-      move_in_comments: type === "live" ? formData.moveInComments : null,
-      travel_time: type === "travel" ? formData.travelTime : null,
-      travel_comments: type === "travel" ? formData.travelComments : null,
-      rv_use: type === "travel" ? formData.rvUse : null,
-      unit_count: type === "invest" ? formData.unitCount : null,
-      rental_start_time: type === "invest" ? formData.rentalStartTime : null,
+      looking_for: formData.lookingFor || "myself", // Ensure a valid value
+      budget: formData.budget || "under70k", // Ensure a valid value
+      comments: formData.comments || null,
+      preferred_contact: formData.preferredContact || "call", // Ensure a valid value
+      move_in_time: type === "live" ? formData.moveInTime || "yesterday" : null, // Ensure a valid value
+      move_in_comments:
+        type === "live" ? formData.moveInComments || null : null,
+      travel_time:
+        type === "travel" ? formData.travelTime || "yesterday" : null, // Ensure a valid value
+      travel_comments:
+        type === "travel" ? formData.travelComments || null : null,
+      rv_use: type === "travel" ? formData.rvUse || "dryCamping" : null, // Ensure a valid value
+      unit_count: type === "invest" ? formData.unitCount || "1" : null, // Ensure a valid value
+      rental_start_time:
+        type === "invest" ? formData.rentalStartTime || "yesterday" : null, // Ensure a valid value
       rental_start_comments:
-        type === "invest" ? formData.rentalStartComments : null,
-      has_land: type === "invest" ? formData.hasLand : null,
-      needs_land_help: type === "invest" ? formData.needsLandHelp : null,
+        type === "invest" ? formData.rentalStartComments || null : null,
+      has_land: type === "invest" ? formData.hasLand || "yes" : null, // Ensure a valid value
+      needs_land_help:
+        type === "invest" && formData.hasLand === "no"
+          ? formData.needsLandHelp || "yes"
+          : null, // Ensure a valid value
       purchase_method:
-        type === "live" || type === "travel" ? formData.purchaseMethod : null,
+        type === "live" || type === "travel"
+          ? formData.purchaseMethod || "cash"
+          : null, // Ensure a valid value
     };
 
     // Call the submit-lead Edge Function
@@ -77,7 +87,7 @@
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.SUPABASE_ANON_KEY}`, // Add the anon key
+            Authorization: `Bearer ${import.meta.env.SUPABASE_ANON_KEY}`,
           },
           body: JSON.stringify(leadData),
         }
@@ -102,20 +112,20 @@
         phone: "",
         email: "",
         cityStateZip: "",
-        lookingFor: "",
-        travelTime: "",
+        lookingFor: "myself",
+        travelTime: "yesterday",
         travelComments: "",
-        moveInTime: "",
+        moveInTime: "yesterday",
         moveInComments: "",
-        unitCount: "",
-        rentalStartTime: "",
+        unitCount: "1",
+        rentalStartTime: "yesterday",
         rentalStartComments: "",
-        hasLand: "",
-        needsLandHelp: "",
-        budget: "",
-        purchaseMethod: "",
+        hasLand: "yes",
+        needsLandHelp: "yes",
+        budget: "under70k",
+        purchaseMethod: "cash",
         comments: "",
-        preferredContact: "",
+        preferredContact: "call",
       };
       localStorage.removeItem(`formData_${type}`);
       dialogElement.close();
@@ -153,8 +163,10 @@
       on:click={() => {
         dialogElement.close();
         onClose();
-      }}>×</button
+      }}
     >
+      ×
+    </button>
 
     {#if type === "live"}
       <p>
@@ -206,7 +218,6 @@
       <label>
         Are you looking for yourself or someone else?
         <select bind:value={formData.lookingFor} required>
-          <option value="">Select an option</option>
           <option value="myself">For myself</option>
           <option value="someoneElse">For someone else</option>
         </select>
@@ -216,7 +227,6 @@
         <label>
           When are you looking to move into your Tiny Home?
           <select bind:value={formData.moveInTime} required>
-            <option value="">Select an option</option>
             <option value="yesterday">Yesterday</option>
             <option value="1-6months">1-6 Months</option>
             <option value="withinYear">Within a year</option>
@@ -233,7 +243,6 @@
         <label>
           When are you looking to travel in your Tiny Home RV?
           <select bind:value={formData.travelTime} required>
-            <option value="">Select an option</option>
             <option value="yesterday">Yesterday</option>
             <option value="1-6months">1-6 Months</option>
             <option value="withinYear">Within a year</option>
@@ -249,7 +258,6 @@
         <label>
           How do you intend to use your Tiny Home RV?
           <select bind:value={formData.rvUse} required>
-            <option value="">Select an option</option>
             <option value="dryCamping">Dry Camping/Boondocking</option>
             <option value="hookups">With Hookups (RV Park/Campgrounds)</option>
           </select>
@@ -258,7 +266,6 @@
         <label>
           How many units are you looking to build?
           <select bind:value={formData.unitCount} required>
-            <option value="">Select an option</option>
             <option value="1">1</option>
             <option value="2-5">2-5</option>
             <option value="6-10">6-10</option>
@@ -269,7 +276,6 @@
         <label>
           When are you looking to begin leasing/selling your Tiny Home(s)?
           <select bind:value={formData.rentalStartTime} required>
-            <option value="">Select an option</option>
             <option value="yesterday">Yesterday</option>
             <option value="1-6months">1-6 Months</option>
             <option value="withinYear">Within a year</option>
@@ -285,7 +291,6 @@
         <label>
           Do you already have land?
           <select bind:value={formData.hasLand} required>
-            <option value="">Select an option</option>
             <option value="yes">Yes</option>
             <option value="no">No</option>
           </select>
@@ -295,7 +300,6 @@
             Would you like help finding land for an investment property or Tiny
             Home Village?
             <select bind:value={formData.needsLandHelp} required>
-              <option value="">Select an option</option>
               <option value="yes">Yes</option>
               <option value="no">No</option>
             </select>
@@ -311,7 +315,6 @@
             What is your budget?
           {/if}
           <select bind:value={formData.budget} required>
-            <option value="">Select an option</option>
             <option value="under70k">{@html "<$70,000 (bare bones)"}</option>
             <option value="70k-100k">$70,000-$100,000 (eco-luxury)</option>
             <option value="over100k"
@@ -325,7 +328,6 @@
         <label>
           How are you planning to purchase your Tiny Home?
           <select bind:value={formData.purchaseMethod} required>
-            <option value="">Select an option</option>
             <option value="cash">Cash/Check</option>
             <option value="ownFinancing">I have my own financing</option>
             <option value="needFinancing">I need financing</option>
